@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard - Testlar Ro'yxati</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script type="module" src="./js/dashboard.js"></script>
+</head>
+<body class="bg-gray-100">
+
+  <!-- Navbar -->
+  <nav class="bg-blue-500 p-4 text-white">
+    <h1 class="text-xl">Admin Dashboard</h1>
+    <button onclick="logout()" class="bg-red-500 px-4 py-2 rounded-lg">Logout</button>
+  </nav>
+
+  <main class="p-4">
+    <h2 class="text-2xl mb-4">Testlar Ro'yxati</h2>
+    <button onclick="createTest()" class="bg-green-500 text-white py-2 px-4 rounded-lg mb-4">Yangi Test Yaratish</button>
+    <div id="test-list" class="space-y-4"></div>
+  </main>
+
+</body>
+</html>

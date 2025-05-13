@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Testni Yechish</title>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"></script>
+    <script defer src="take-test.js"></script>
+</head>
+
+<body class="bg-gray-100">
+
+    <!-- Navbar -->
+    <nav class="bg-blue-500 p-4 text-white">
+        <h1 class="text-xl">Testni Yechish</h1>
+        <button onclick="logout()" class="bg-red-500 px-4 py-2 rounded-lg">Logout</button>
+    </nav>
+
+    <main class="p-4">
+        <div id="test-container" class="space-y-6">
+            <!-- Test savollari va variantlar bu yerda dinamik ravishda ko'rsatiladi -->
+        </div>
+
+        <!-- Timer -->
+        <div id="timer" class="mt-4 text-xl font-bold text-center"></div>
+
+        <!-- Modal -->
+        <div id="time-up-modal" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 hidden">
+            <div class="bg-white p-8 rounded-lg text-center">
+                <h2 class="text-2xl mb-4">Vaqt Tugadi!</h2>
+                <button onclick="submitTest()" class="bg-green-500 px-4 py-2 rounded-lg">Natijani Ko'rish</button>
+            </div>
+        </div>
+
+        <button onclick="submitTest()" class="bg-blue-500 px-4 py-2 rounded-lg mt-4">Testni Yakunlash</button>
+    </main>
+</body>
+
+</html>

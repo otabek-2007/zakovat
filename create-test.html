@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Yaratish</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script type="module" src="./js/create-test.js" defer></script>
+</head>
+<body class="bg-gray-100">
+
+  <!-- Navbar -->
+  <nav class="bg-blue-500 p-4 text-white flex justify-between items-center">
+    <h1 class="text-xl">Test Yaratish</h1>
+    <button onclick="logout()" class="bg-red-500 px-4 py-2 rounded-lg">Logout</button>
+  </nav>
+
+  <main class="p-4">
+    <h2 class="text-2xl mb-4">Yangi Test Yaratish</h2>
+
+    <form id="create-test-form" class="space-y-4 max-w-xl mx-auto bg-white p-6 rounded shadow">
+      <div>
+        <label for="test-name" class="block text-gray-700">Test Nomi</label>
+        <input type="text" id="test-name" class="w-full p-2 border rounded" placeholder="Test nomini kiriting" required>
+      </div>
+      <div>
+        <label for="test-description" class="block text-gray-700">Test Tavsifi</label>
+        <textarea id="test-description" class="w-full p-2 border rounded" placeholder="Test tavsifini kiriting" required></textarea>
+      </div>
+    
+      <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded-lg">Testni Yaratish</button>
+    </form>
+  </main>
+</body>
+</html>
