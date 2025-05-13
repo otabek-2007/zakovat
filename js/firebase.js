@@ -1,17 +1,28 @@
-// js/firebase.js
+// firebase.js
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getAuth,
-  onAuthStateChanged,
-  signOut
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import {
   getFirestore,
   collection,
   addDoc,
+  getDocs,
+  getDoc,
+  doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  orderBy,
   serverTimestamp
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+// Firebase konfiguratsiyasi (o'zingizning project ma'lumotlari bilan almashtiring)
 const firebaseConfig = {
   apiKey: "AIzaSyBXJSvrT31Bss6bs-WJe_Hm1kyccip2P_4",
   authDomain: "sorovnoma-93601.firebaseapp.com",
@@ -23,16 +34,30 @@ const firebaseConfig = {
   measurementId: "G-FY2HBSN1YP"
 };
 
+// Firebase'ni ishga tushirish
 const app = initializeApp(firebaseConfig);
+
+// Auth va Firestore instance'larini olish
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// Exportlar
 export {
   auth,
   db,
-  onAuthStateChanged,
+  signInWithEmailAndPassword,
   signOut,
+  onAuthStateChanged,
   collection,
   addDoc,
+  getDocs,
+  getDoc,
+  doc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  orderBy,
   serverTimestamp
 };

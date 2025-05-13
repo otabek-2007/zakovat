@@ -6,19 +6,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Testni Yechish</title>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js"></script>
-
+ 
   <!-- Tailwind CSS -->
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 
-  <!-- Firebase config file -->
-  <script type="module" src="/js/firebase.js"></script>
+ <!-- TO‘G‘RI USUL: Faqat js fayllarni module sifatida yuklang -->
+<script type="module" src="/js/firebase.js"></script>
+<script type="module" defer src="/js/take-test.js"></script>
 
-  <!-- Custom JS with module type -->
-  <script type="module" defer src="/js/take-test.js"></script>
 </head>
 
 
@@ -39,7 +34,7 @@
         <div id="timer" class="mt-4 text-xl font-bold text-center"></div>
 
         <!-- Modal -->
-        <div id="time-up-modal" class="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 hidden">
+        <div id="time-up-modal" class="fixed modal inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 hidden">
             <div class="bg-white p-8 rounded-lg text-center">
                 <h2 class="text-2xl mb-4">Vaqt Tugadi!</h2>
                 <button onclick="submitTest()" class="bg-green-500 px-4 py-2 rounded-lg">Natijani Ko'rish</button>
