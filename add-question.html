@@ -1,65 +1,33 @@
 <!DOCTYPE html>
 <html lang="uz">
-
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Testga Savollar Qo‘shish</title>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
-    <script type="module" src="js/add-question.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-</head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Testga Savollar Qo‘shish</title>
 
+  <!-- Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+  <!-- JavaScript (module) -->
+  <script type="module" src="js/add-question.js"></script>
+</head>
 <body class="bg-gray-100">
 
-    <nav class="bg-blue-500 p-4 text-white flex justify-between items-center">
-        <h1 class="text-xl">Testga Savollar Qo‘shish</h1>
-        <button onclick="logout()" class="bg-red-500 px-4 py-2 rounded-lg">Chiqish</button>
-    </nav>
+  <nav class="bg-blue-500 p-4 text-white flex justify-between items-center">
+    <h1 class="text-xl">Testga Savollar Qo‘shish</h1>
+    <button onclick="logout()" class="bg-red-500 px-4 py-2 rounded-lg">Chiqish</button>
+  </nav>
 
-    <main class="p-4 flex justify-center">
-      <form id="add-question-form" class="space-y-4 max-w-[50%] w-full bg-white p-6 rounded-lg shadow">
-          <h2 class="text-2xl mb-4 text-center">Savol qo‘shing</h2>
-    
-          <div>
-              <label for="question-text" class="block text-gray-700">Savol matni</label>
-              <input type="text" id="question-text" class="w-full p-2 border rounded" required>
-          </div>
-    
-          <div id="answers-container">
-              <!-- Dynamic answer inputs will be appended here -->
-              <div class="answer-input-group">
-                  <label for="answer1" class="block text-gray-700">Javob 1</label>
-                  <input type="text" id="answer1" name="answer1" class="answer w-full p-2 border rounded" required>
-              </div>
-          </div>
-    
-          <button type="button" id="add-answer-btn" class="bg-blue-500 text-white py-2 px-4 rounded-lg mt-4">Variant qo‘shish</button>
-    
-          <div>
-              <label for="correct-answer" class="block text-gray-700">To‘g‘ri javob raqami</label>
-              <select id="correct-answer" name="correct-answer" class="w-full p-2 border rounded" required>
-                  <option value="" disabled selected>Javobni tanlang</option>
-              </select>
-          </div>
-    
-          <div>
-              <label for="points" class="block text-gray-700">Savol uchun ball</label>
-              <input type="number" id="points" class="w-full p-2 border rounded" required>
-          </div>
-    
-          <div>
-              <label for="question-duration" class="block text-gray-700">Savol davomiyligi (daqiqada)</label>
-              <input type="number" id="question-duration" class="w-full p-2 border rounded" placeholder="Masalan: 2" required>
-          </div>
-    
-          <button type="submit" class="bg-green-500 text-white py-2 px-4 rounded-lg w-full">Savolni Qo‘shish</button>
-      </form>
-    </main>
-    
+ <!-- oldingi form submit va savol qo‘shish tugmalari yo‘q qilinadi -->
+<main class="p-4 flex flex-col items-center">
+  <div id="questions-wrapper" class="space-y-10 w-full max-w-3xl"></div>
+
+  <div class="flex gap-4 mt-10">
+    <button id="add-question" class="bg-green-500 text-white px-6 py-3 rounded-lg">Savol qo‘shish</button>
+    <button id="finish-test" class="bg-purple-600 text-white px-6 py-3 rounded-lg">Testni yakunlash</button>
+  </div>
+</main>
+
 
 </body>
-
 </html>

@@ -1,3 +1,4 @@
+// Firebase importlari
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -14,64 +15,106 @@ const firebaseConfig = {
   measurementId: "G-FY2HBSN1YP"
 };
 
+// Firebase ilovasini ishga tushirish
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// Login tekshiruvi
+// Login tekshiruvi (admin kirganmi yoki yo'qmi)
 onAuthStateChanged(auth, (user) => {
   if (!user) {
-    window.location.href = 'index.html';
+    window.location.href = 'index.html'; // login sahifasiga qaytarish
   }
 });
 
-// Testlar ro'yxatini yuklash
-function loadTests() {
+async function loadTests() {
   const testListContainer = document.getElementById("test-list");
+  testListContainer.innerHTML = ''; // oldingi ma'lumotlarni tozalash
 
-  getDocs(collection(db, "tests"))
-    .then((querySnapshot) => {
-      querySnapshot.forEach((doc) => {
-        const testData = doc.data();
-        const testItem = document.createElement("div");
-        testItem.classList.add("p-4", "bg-white", "shadow-md", "rounded-lg");
+  try {
+    const querySnapshot = await getDocs(collection(db, "tests"));
 
-        testItem.innerHTML = `
-          <h3 class="text-xl font-bold">${testData.name}</h3>
-          <p>${testData.description}</p>
-          <button onclick="viewTest('${doc.id}')" class="bg-blue-500 text-white px-4 py-2 rounded-lg mt-2">Ko'rish</button>
-        `;
+    if (querySnapshot.empty) {
+      testListContainer.innerHTML = `<p class="text-gray-600">Hech qanday test topilmadi.</p>`;
+      return;
+    }
 
-        testListContainer.appendChild(testItem);
-      });
-    })
-    .catch((error) => {
-      console.error("Error getting documents: ", error);
+    querySnapshot.forEach((doc) => {
+      const testData = doc.data();
+      const testItem = document.createElement("div");
+      testItem.classList.add("p-4", "bg-white", "shadow-md", "rounded-lg", "mb-4");
+
+      const testLink = `${window.location.origin}/take-test.html?testId=${doc.id}`;
+
+      testItem.innerHTML = `
+        <h3 class="text-xl font-bold">${testData.name}</h3>
+        <p class="text-gray-700">${testData.description}</p>
+        <div class="flex gap-2 mt-3">
+          <button onclick="viewTest('${doc.id}')" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+            Savollarni ko'rish
+          </button>
+          <button onclick="addQuestions('${doc.id}')" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg">
+            Savol qo'shish
+          </button>
+          <button onclick="copyLink('${testLink}')" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
+            Linkni nusxalash
+          </button>
+        </div>
+      `;
+
+      testListContainer.appendChild(testItem);
     });
+
+  } catch (error) {
+    console.error("Testlarni yuklashda xatolik:", error);
+    testListContainer.innerHTML = `<p class="text-red-600">Xatolik yuz berdi. Qayta urinib ko'ring.</p>`;
+  }
 }
 
+// Linkni clipboardga nusxalash
+function copyLink(link) {
+  navigator.clipboard.writeText(link).then(() => {
+    alert("Test linki nusxalandi!");
+  }).catch((err) => {
+    console.error("Linkni nusxalashda xatolik:", err);
+    alert("Linkni nusxalashda xatolik yuz berdi.");
+  });
+}
+
+
+// Testga savol qo'shish sahifasiga o'tish
+function addQuestions(testId) {
+  window.location.href = `add-question.html?testId=${testId}`;
+}
+
+// Testni faqat ko‘rish sahifasiga o'tish
+function viewTest(testId) {
+  window.location.href = `show-test.html?testId=${testId}`;
+}
+
+// Yangi test yaratish sahifasiga o'tish
 function createTest() {
   window.location.href = 'create-test.html';
 }
 
-function viewTest(testId) {
-  window.location.href = `add-question.html?testId=${testId}`;
-}
-
+// Chiqish funksiyasi
 function logout() {
   signOut(auth)
     .then(() => {
       window.location.href = 'index.html';
     })
     .catch((error) => {
-      console.error("Logout error: ", error);
+      console.error("Chiqishda xatolik:", error);
     });
 }
 
-// Expose functions to global scope
+// Funksiyalarni global qilish
 window.logout = logout;
 window.createTest = createTest;
 window.viewTest = viewTest;
+window.addQuestions = addQuestions;
+window.copyLink = copyLink;
 
-// Load tests on window load
+
+// Sahifa yuklanganda testlarni yuklash
 window.onload = loadTests;

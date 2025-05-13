@@ -1,121 +1,158 @@
-// Firebase modullarini import qilish
+// Firebase importlari
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 // Firebase konfiguratsiyasi
 const firebaseConfig = {
-    apiKey: "AIzaSyBXJSvrT31Bss6bs-WJe_Hm1kyccip2P_4",
-    authDomain: "sorovnoma-93601.firebaseapp.com",
-    databaseURL: "https://sorovnoma-93601-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "sorovnoma-93601",
-    storageBucket: "sorovnoma-93601.appspot.com",
-    messagingSenderId: "607837032856",
-    appId: "1:607837032856:web:a6a3ba5f5d26f1d6d25bed",
-    measurementId: "G-FY2HBSN1YP"
+  apiKey: "AIzaSyBXJSvrT31Bss6bs-WJe_Hm1kyccip2P_4",
+  authDomain: "sorovnoma-93601.firebaseapp.com",
+  projectId: "sorovnoma-93601",
+  storageBucket: "sorovnoma-93601.appspot.com",
+  messagingSenderId: "607837032856",
+  appId: "1:607837032856:web:a6a3ba5f5d26f1d6d25bed"
 };
 
-// Firebase ilovasini ishga tushurish
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
-// URL query'dan testId olish
-const urlParams = new URLSearchParams(window.location.search);
-const testId = urlParams.get('testId');
+// testId
+const testId = new URLSearchParams(window.location.search).get('testId');
 
-// Foydalanuvchi tizimga kirganini tekshirish
+// Auth check
 onAuthStateChanged(auth, (user) => {
-    if (!user) {
-        window.location.href = 'index.html';
-    }
+  if (!user) window.location.href = 'index.html';
 });
 
-// Savol qo‘shish formasi yuborilganda
-document.getElementById("add-question-form").addEventListener("submit", async (event) => {
-    event.preventDefault();
+let questionCount = 0;
 
-    // Input qiymatlarni olish
-    const questionText = document.getElementById("question-text").value.trim();
-    const answers = [];
-    const answerInputs = document.querySelectorAll(".answer");
-    answerInputs.forEach((input, index) => {
-        answers.push(input.value.trim());
+// Savol formasi yaratish
+function createQuestionForm(number) {
+  const wrapper = document.createElement('div');
+  wrapper.className = "space-y-4 bg-white p-6 rounded-lg shadow";
+  wrapper.dataset.index = number;
+
+  wrapper.innerHTML = `
+    <h2 class="text-xl font-semibold">Savol ${number}</h2>
+    <div>
+      <label class="block text-gray-700">Savol matni</label>
+      <input type="text" class="question-text w-full p-2 border rounded" required>
+    </div>
+
+    <div class="answers-container space-y-2">
+      ${generateAnswerGroup(1)}
+    </div>
+
+    <button type="button" class="add-answer bg-blue-500 text-white px-4 py-2 rounded">Variant qo‘shish</button>
+
+    <div>
+      <label class="block text-gray-700">To‘g‘ri javob raqami</label>
+      <select class="correct-answer w-full p-2 border rounded" required>
+        <option value="1">Javob 1</option>
+      </select>
+    </div>
+
+    <div>
+      <label class="block text-gray-700">Ball</label>
+      <input type="number" class="points w-full p-2 border rounded" required>
+    </div>
+
+    <div>
+      <label class="block text-gray-700">Savol davomiyligi (daqiqada)</label>
+      <input type="number" class="duration w-full p-2 border rounded" required>
+    </div>
+  `;
+
+  document.getElementById('questions-wrapper').appendChild(wrapper);
+}
+
+// Javob inputini yaratish
+function generateAnswerGroup(index) {
+  return `
+    <div class="answer-input-group">
+      <label class="block text-gray-700">Javob ${index}</label>
+      <input type="text" class="answer w-full p-2 border rounded" required>
+    </div>
+  `;
+}
+
+// Variant qo‘shish tugmasi
+document.addEventListener("click", (e) => {
+  if (!e.target.classList.contains("add-answer")) return;
+
+  const form = e.target.closest("div[data-index]");
+  const answersContainer = form.querySelector(".answers-container");
+  const answerCount = answersContainer.querySelectorAll(".answer-input-group").length + 1;
+
+  answersContainer.insertAdjacentHTML("beforeend", generateAnswerGroup(answerCount));
+
+  const select = form.querySelector(".correct-answer");
+  const option = document.createElement("option");
+  option.value = answerCount;
+  option.textContent = `Javob ${answerCount}`;
+  select.appendChild(option);
+});
+
+// "Savol qo‘shish" tugmasi
+document.getElementById("add-question").addEventListener("click", () => {
+  questionCount++;
+  createQuestionForm(questionCount);
+});
+
+// "Testni yakunlash" tugmasi
+document.getElementById("finish-test").addEventListener("click", async () => {
+  const allForms = document.querySelectorAll("#questions-wrapper > div[data-index]");
+  const allQuestions = [];
+
+  for (const form of allForms) {
+    const questionText = form.querySelector(".question-text").value.trim();
+    const correctAnswer = form.querySelector(".correct-answer").value;
+    const points = parseInt(form.querySelector(".points").value);
+    const duration = parseInt(form.querySelector(".duration").value);
+
+    const answersInputs = form.querySelectorAll(".answer");
+    const answers = {};
+    let valid = true;
+
+    answersInputs.forEach((input, index) => {
+      const val = input.value.trim();
+      if (!val) valid = false;
+      answers[index + 1] = val;
     });
 
-    const correctAnswer = document.getElementById("correct-answer").value.trim();
-    const points = document.getElementById("points").value.trim();
-    const questionDuration = document.getElementById("question-duration").value.trim();
-
-    // Ma'lumotlar obyektini tayyorlash
-    const newQuestion = {
-        questionText,
-        answers: {
-            1: answers[0],
-            2: answers[1],
-            3: answers[2],
-            4: answers[3],
-        },
-        correctAnswer,
-        points: Number(points),
-        duration: Number(questionDuration),
-    };
-
-    try {
-        await addDoc(collection(db, "tests", testId, "questions"), newQuestion);
-        alert("Savol muvaffaqiyatli qo‘shildi!");
-        window.location.href = `add-question.html?testId=${testId}`;
-    } catch (error) {
-        console.error("Xatolik yuz berdi:", error);
-        alert("Xatolik yuz berdi. Iltimos, qayta urinib ko‘ring.");
+    if (!valid || !questionText || !correctAnswer || isNaN(points) || isNaN(duration)) {
+      alert(`Savol ${form.dataset.index} da xatolik: barcha maydonlar to‘ldirilishi shart.`);
+      return;
     }
+
+    allQuestions.push({
+      questionText,
+      answers,
+      correctAnswer: Number(correctAnswer),
+      points,
+      duration
+    });
+  }
+
+  try {
+    for (const q of allQuestions) {
+      await addDoc(collection(db, "tests", testId, "questions"), q);
+    }
+
+    alert("Barcha savollar muvaffaqiyatli qo‘shildi!");
+    window.location.href = "dashboard.html";
+  } catch (error) {
+    console.error("Yozish xatosi:", error);
+    alert("Xatolik yuz berdi.");
+  }
 });
 
-// Logout funksiyasi
+// Logout
 window.logout = function () {
-    signOut(auth)
-        .then(() => {
-            window.location.href = 'index.html';
-        })
-        .catch((error) => {
-            console.error("Logout error:", error);
-        });
-}
-document.getElementById('add-answer-btn').addEventListener('click', function () {
-  const answersContainer = document.getElementById('answers-container');
-  const answerCount = answersContainer.children.length + 1;
+  signOut(auth).then(() => window.location.href = 'index.html')
+    .catch((error) => console.error("Logout xatosi:", error));
+};
 
-  const newAnswerGroup = document.createElement('div');
-  newAnswerGroup.classList.add('answer-input-group');
-
-  const label = document.createElement('label');
-  label.setAttribute('for', `answer${answerCount}`);
-  label.classList.add('block', 'text-gray-700');
-  label.textContent = `Javob ${answerCount}`;
-
-  const input = document.createElement('input');
-  input.type = 'text';
-  input.classList.add('answer', 'w-full', 'p-2', 'border', 'rounded');
-  input.id = `answer${answerCount}`;
-  input.name = `answer${answerCount}`;
-  input.required = true;
-
-  newAnswerGroup.appendChild(label);
-  newAnswerGroup.appendChild(input);
-  answersContainer.appendChild(newAnswerGroup);
-
-  const correctAnswerSelect = document.getElementById('correct-answer');
-  const newOption = document.createElement('option');
-  newOption.value = answerCount;
-  newOption.textContent = `Javob ${answerCount}`;
-  correctAnswerSelect.appendChild(newOption);
-});
-
-// ✅ Dastlab sahifa yuklanganda 1-variantni select-ga qo'shish
-window.addEventListener('DOMContentLoaded', () => {
-  const correctAnswerSelect = document.getElementById('correct-answer');
-  const option = document.createElement('option');
-  option.value = 1;
-  option.textContent = 'Javob 1';
-  correctAnswerSelect.appendChild(option);
-});
+// Dastlab bitta savol formasi
+document.getElementById("add-question").click();
