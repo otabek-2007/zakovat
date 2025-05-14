@@ -117,21 +117,27 @@ function updateTimerDisplay(seconds) {
     timerElement.textContent = `Vaqt: ${seconds}s`;
 }
 
-// Javobni saqlash
 function saveAnswer() {
     const selected = document.querySelector('input[name="option"]:checked');
     const q = questions[currentQuestionIndex];
     const selectedAnswer = selected ? selected.value : null;
 
+    // Ehtiyotkorlik bilan stringlar solishtirilmoqda
+    const correctAnswer = q.correctAnswer ? q.correctAnswer.toString().trim().toLowerCase() : null;
+    const userAnswer = selectedAnswer ? selectedAnswer.toString().trim().toLowerCase() : null;
+
+    const isCorrect = correctAnswer && userAnswer && userAnswer === correctAnswer;
+
     userAnswers.push({
         questionId: q.id,
         selectedAnswer,
         correctAnswer: q.correctAnswer,
-        points: q.points || 0
+        points: q.points || 0,
+        isCorrect
     });
 
-    if (selectedAnswer === q.correctAnswer) {
-        score += q.points || 0;
+    if (isCorrect) {
+        score += Number(q.points || 0);
     }
 
     localStorage.setItem('userAnswers_' + testId, JSON.stringify(userAnswers));
@@ -144,6 +150,7 @@ function saveAnswer() {
     }
 }
 
+
 // Modalni ko‘rsatish
 function showModal() {
     if (modal) {
@@ -152,7 +159,6 @@ function showModal() {
     }
 }
 
-// Testni yakunlash
 window.submitTest = async function () {
     clearInterval(timer);
     const groupName = groupInput.value.trim() || "Nomaʼlum guruh";
@@ -177,13 +183,12 @@ window.submitTest = async function () {
         localStorage.removeItem('userAnswers_' + testId);
 
         alert("Natijangiz saqlandi!");
-        setTimeout(() => {
         window.location.href = `waiting.html`;
-        }, 3000);
     } catch (err) {
         console.error("Xatolik:", err);
         alert("Natijani saqlashda xatolik yuz berdi.");
     }
 };
+
 
 loadQuestions();
