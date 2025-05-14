@@ -1,50 +1,48 @@
 import { auth, db } from './firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import {
-    doc, setDoc, serverTimestamp,
+    doc, addDoc, serverTimestamp,
     collection, query, orderBy, getDocs
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-let user = null;
-let testId = null;
-let testName = null;
-
-onAuthStateChanged(auth, (u) => {
-    user = u;
-});
-
+// DOM elementlar
 const testContainer = document.getElementById('test-container');
 const timerElement = document.getElementById('timer');
 const modal = document.getElementById('time-up-modal');
 const groupInput = document.getElementById('group-name-input');
 
+let user = null;
+let testId = null;
+let testName = null;
+
 let currentQuestionIndex = 0;
 let questions = [];
 let userAnswers = [];
+let score = 0;
 let timer = null;
-let score = 0; // Ballar
+
+// Foydalanuvchini aniqlash
+onAuthStateChanged(auth, (u) => {
+    user = u;
+});
 
 // Savollarni yuklash
 async function loadQuestions() {
-    testId = new URLSearchParams(window.location.search).get('testId');
-    testName = new URLSearchParams(window.location.search).get('testName');
+    const params = new URLSearchParams(window.location.search);
+    testId = params.get('testId');
+    testName = params.get('testName');
 
     if (!testId) {
-        alert('Test ID mavjud emas. URLni tekshiring!');
+        alert("Test ID topilmadi. URLni tekshiring!");
         return;
     }
 
-    const questionsRef = collection(db, 'tests', testId, 'questions');
-    const questionsQuery = query(questionsRef, orderBy('questionText'));
-    const querySnapshot = await getDocs(questionsQuery);
+    const qRef = collection(db, 'tests', testId, 'questions');
+    const qSnap = await getDocs(query(qRef, orderBy('questionText')));
+    questions = qSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
-    questions = [];
-    querySnapshot.forEach(doc => {
-        questions.push({ id: doc.id, ...doc.data() });
-    });
-
-    const savedAnswers = JSON.parse(localStorage.getItem('userAnswers_' + testId) || '[]');
-    userAnswers = savedAnswers;
+    const saved = JSON.parse(localStorage.getItem('userAnswers_' + testId) || '[]');
+    userAnswers = saved;
     currentQuestionIndex = userAnswers.length;
 
     if (currentQuestionIndex < questions.length) {
@@ -54,6 +52,7 @@ async function loadQuestions() {
     }
 }
 
+// Savolni ko'rsatish
 function showQuestion(index) {
     const q = questions[index];
     if (!q || !q.answers || Object.keys(q.answers).length === 0) {
@@ -77,24 +76,24 @@ function showQuestion(index) {
     setupRadioToggle();
     startTimer(q.duration || 30);
 }
+
+// Radio tugmalar toggle qilish
 function setupRadioToggle() {
     const radios = document.querySelectorAll('input[type="radio"]');
     radios.forEach(radio => {
         radio.addEventListener('click', function () {
-            if (this.checked) {
-                if (this.dataset.clicked === 'true') {
-                    this.checked = false;
-                    this.dataset.clicked = 'false';
-                } else {
-                    radios.forEach(r => r.dataset.clicked = 'false');
-                    this.dataset.clicked = 'true';
-                }
+            if (this.dataset.clicked === 'true') {
+                this.checked = false;
+                this.dataset.clicked = 'false';
+            } else {
+                radios.forEach(r => r.dataset.clicked = 'false');
+                this.dataset.clicked = 'true';
             }
         });
     });
 }
 
-
+// Timerni boshlash
 function startTimer(seconds) {
     clearInterval(timer);
     const questionKey = `timer_${testId}_${currentQuestionIndex}`;
@@ -118,22 +117,21 @@ function updateTimerDisplay(seconds) {
     timerElement.textContent = `Vaqt: ${seconds}s`;
 }
 
+// Javobni saqlash
 function saveAnswer() {
     const selected = document.querySelector('input[name="option"]:checked');
     const q = questions[currentQuestionIndex];
-
     const selectedAnswer = selected ? selected.value : null;
 
     userAnswers.push({
         questionId: q.id,
-        selectedAnswer: selectedAnswer,
+        selectedAnswer,
         correctAnswer: q.correctAnswer,
-        points: q.points
+        points: q.points || 0
     });
 
-    // To'g'ri javobni tekshirish va ballarni hisoblash
     if (selectedAnswer === q.correctAnswer) {
-        score += q.points; // To'g'ri javob bo'lsa, ballarni qo'shamiz
+        score += q.points || 0;
     }
 
     localStorage.setItem('userAnswers_' + testId, JSON.stringify(userAnswers));
@@ -146,7 +144,7 @@ function saveAnswer() {
     }
 }
 
-
+// Modalni ko‘rsatish
 function showModal() {
     if (modal) {
         modal.classList.remove('hidden');
@@ -154,32 +152,38 @@ function showModal() {
     }
 }
 
-// Finalni topshirish
+// Testni yakunlash
 window.submitTest = async function () {
     clearInterval(timer);
+    const groupName = groupInput.value.trim() || "Nomaʼlum guruh";
 
-    const uid = user ? user.uid : 'guest_' + Date.now();
-    const groupName = groupInput.value.trim();
-    const filteredAnswers = userAnswers.filter(a => a.selectedAnswer !== null);
-
-    const resultRef = doc(db, 'test_results', uid);
-    await setDoc(resultRef, {
-        testId: testId,
-        testName: testName || "Nomaʼlum test",
-        group: groupName,
-        answers: filteredAnswers,
-        score: score, // Ballarni qo'shamiz
-        timestamp: serverTimestamp()
-    });
-
-    // LocalStorage tozalash
-    for (let i = 0; i < questions.length; i++) {
-        localStorage.removeItem(`timer_${testId}_${i}`);
+    if (!user) {
+        alert("Foydalanuvchi aniqlanmadi.");
+        return;
     }
-    localStorage.removeItem('userAnswers_' + testId);
 
-    alert("Natijangiz saqlandi!");
-    window.location.href = `/result.html?testId=${testId}`;
+    try {
+        await addDoc(collection(db, "test_results"), {
+            uid: user.uid,
+            email: user.email,
+            testId,
+            testName: testName || "Nomaʼlum test",
+            answers: userAnswers,
+            totalScore: score,
+            group: groupName,
+            submittedAt: serverTimestamp()
+        });
+
+        localStorage.removeItem('userAnswers_' + testId);
+
+        alert("Natijangiz saqlandi!");
+        setTimeout(() => {
+        window.location.href = `waiting.html`;
+        }, 3000);
+    } catch (err) {
+        console.error("Xatolik:", err);
+        alert("Natijani saqlashda xatolik yuz berdi.");
+    }
 };
 
 loadQuestions();

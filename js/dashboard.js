@@ -110,17 +110,15 @@ export async function showResults(testId) {
         const group = data.group || "Nomaʼlum jamoa";
         
         let totalScore = 0;
-        const totalQuestions = data.answers.length;
 
-        // Ballarni hisoblash
         data.answers.forEach(answer => {
           if (answer.selectedAnswer === answer.correctAnswer) {
-            totalScore += answer.points; // Yig'ilgan ballar
+            totalScore += answer.points || 1;
           }
         });
 
         const div = document.createElement("div");
-        div.className = "bg-gray-100 p-4 rounded shadow";
+        div.className = "bg-gray-100 p-4 rounded shadow mb-4";
 
         div.innerHTML = `
           <p><strong>Guruh:</strong> ${group}</p>
@@ -128,6 +126,16 @@ export async function showResults(testId) {
 
         resultContent.appendChild(div);
       });
+
+      // 🔻 Umumiy "Batafsil" tugmasi
+      const detailsButton = document.createElement("button");
+      detailsButton.className = "mt-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded";
+      detailsButton.textContent = "Batafsil";
+      detailsButton.onclick = () => {
+        window.location.href = `result.html?testId=${testId}`;
+      };
+
+      resultContent.appendChild(detailsButton);
     }
 
     document.getElementById("resultModal").classList.remove("hidden");
@@ -140,11 +148,11 @@ export async function showResults(testId) {
 
 
 
+
 function closeModal() {
   document.getElementById("resultModal").classList.add("hidden");
 }
 
-// Global functionlar
 window.logout = () => signOut(auth).then(() => window.location.href = 'index.html');
 window.createTest = createTest;
 window.viewTest = viewTest;
@@ -154,5 +162,9 @@ window.deleteTest = deleteTest;
 window.showResults = showResults;
 window.closeModal = closeModal;
 
-// Sahifa yuklanganda testlarni yuklash
 window.onload = loadTests;
+function viewUserResult(testId, uid) {
+  window.location.href = `result.html?testId=${testId}&uid=${uid}`;
+}
+
+window.viewUserResult = viewUserResult;
