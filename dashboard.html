@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="uz">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -7,25 +7,40 @@
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <script type="module" src="./js/dashboard.js"></script>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-50 text-gray-900">
 
-  <!-- Navbar -->
-  <nav class="bg-blue-500 p-4 text-white flex justify-between items-center">
-    <h1 class="text-xl">Admin Dashboard</h1>
-    <button onclick="logout()" class="bg-red-500 px-4 py-2 rounded-lg">Logout</button>
-  </nav>
+  <!-- Sidebar and Navbar -->
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <div class="w-64 bg-indigo-500 p-6 rounded-r-lg shadow-lg">
+      <h1 class="text-2xl font-semibold text-white mb-8">Admin Dashboard</h1>
+      <nav>
+        <ul class="space-y-4">
+          <li><a href="#" class="text-white hover:text-indigo-200 transition duration-300">Testlar Ro'yxati</a></li>
+          <li><a href="#" class="text-white hover:text-indigo-200 transition duration-300">Yangi Test Yaratish</a></li>
+          <li><a href="#" class="text-white hover:text-indigo-200 transition duration-300">Sozlamalar</a></li>
+          <li><button onclick="logout()" class="w-full text-white bg-red-400 hover:bg-red-500 py-2 px-4 rounded-lg transition duration-300">Chiqish</button></li>
+        </ul>
+      </nav>
+    </div>
 
-  <main class="p-4">
-    <h2 class="text-2xl mb-4">Testlar Ro'yxati</h2>
-    <button onclick="createTest()" class="bg-green-500 text-white py-2 px-4 rounded-lg mb-4">Yangi Test Yaratish</button>
-    <div id="test-list" class="space-y-4"></div>
-  </main>
+    <!-- Main Content -->
+    <div class="flex-1 p-8">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-semibold text-gray-800">Testlar Ro'yxati</h2>
+        <button onclick="createTest()" class="bg-green-500 text-white py-2 px-6 rounded-lg hover:bg-green-400 transition duration-300">Yangi Test Yaratish</button>
+      </div>
+      <div id="test-list" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <!-- Test cards will appear here -->
+      </div>
+    </div>
+  </div>
 
-  <!-- Qatnashganlar modal -->
+  <!-- Qatnashganlar Modal -->
   <div id="resultModal" class="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center hidden">
     <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full p-6">
       <div class="flex justify-between items-center mb-4">
-        <h3 class="text-xl font-bold">Qatnashganlar</h3>
+        <h3 class="text-xl font-bold text-indigo-600">Qatnashganlar</h3>
         <button onclick="closeModal()" class="text-red-500 text-xl">&times;</button>
       </div>
       <div id="resultContent" class="space-y-2 max-h-96 overflow-y-auto"></div>

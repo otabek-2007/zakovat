@@ -152,12 +152,10 @@ function showModal() {
 window.submitTest = async function () {
     clearInterval(timer);
     
-    // Foydalanuvchining UIDsi
     const uid = user ? user.uid : 'guest_' + Date.now(); // Agar tizimga kirmagan bo'lsa, vaqtincha UID yaratish
     const groupName = groupInput.value.trim();
 
-    // `test_results`ga natijalarni yozish
-    const resultRef = doc(db, 'test_results', uid); // Har bir foydalanuvchi uchun alohida hujjat
+    const resultRef = doc(db, 'test_results', uid); 
     const filteredAnswers = userAnswers.filter(a => a.selectedAnswer !== null);
 
     await setDoc(resultRef, {

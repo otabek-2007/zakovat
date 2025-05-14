@@ -13,21 +13,19 @@
 </head>
 <body class="bg-gray-100">
 
-  <nav class="bg-blue-500 p-4 text-white flex justify-between items-center">
+  <nav class="bg-blue-500 p-4 text-white flex justify-between items-center shadow-md">
     <h1 class="text-xl">Testga Savollar Qo‘shish</h1>
     <button onclick="logout()" class="bg-red-500 px-4 py-2 rounded-lg">Chiqish</button>
   </nav>
 
- <!-- oldingi form submit va savol qo‘shish tugmalari yo‘q qilinadi -->
-<main class="p-4 flex flex-col items-center">
-  <div id="questions-wrapper" class="space-y-10 w-full max-w-3xl"></div>
+  <main class="p-4 flex flex-col items-center max-w-3xl mx-auto">
+    <div id="questions-wrapper" class="space-y-10 w-full"></div>
 
-  <div class="flex gap-4 mt-10">
-    <button id="add-question" class="bg-green-500 text-white px-6 py-3 rounded-lg">Savol qo‘shish</button>
-    <button id="finish-test" class="bg-purple-600 text-white px-6 py-3 rounded-lg">Testni yakunlash</button>
-  </div>
-</main>
-
+    <div class="flex gap-4 mt-10">
+      <button id="add-question" class="bg-green-500 text-white px-6 py-3 rounded-lg">Savol qo‘shish</button>
+      <button id="finish-test" class="bg-purple-600 text-white px-6 py-3 rounded-lg">Testni yakunlash</button>
+    </div>
+  </main>
 
 </body>
 </html>

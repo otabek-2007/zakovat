@@ -25,16 +25,28 @@ onAuthStateChanged(auth, (user) => {
   if (!user) window.location.href = 'index.html';
 });
 
-let questionCount = 0;
+let questionIndex = 1;
+
+function generateAnswerGroup(number) {
+  return `
+    <div class="answer-input-group">
+      <label for="answer-${number}" class="block text-gray-700">Variant ${number}</label>
+      <input type="text" class="answer w-full p-2 border rounded" required />
+    </div>
+  `;
+}
 
 // Savol formasi yaratish
-function createQuestionForm(number) {
+export function createQuestionForm() {
   const wrapper = document.createElement('div');
   wrapper.className = "space-y-4 bg-white p-6 rounded-lg shadow";
-  wrapper.dataset.index = number;
+  wrapper.dataset.index = questionIndex;
 
   wrapper.innerHTML = `
-    <h2 class="text-xl font-semibold">Savol ${number}</h2>
+    <div class="flex justify-between items-center">
+      <h2 class="text-xl font-semibold">Savol ${questionIndex}</h2>
+      <button type="button" class="close-btn text-red-500" onclick="closeQuestion(${questionIndex})">X</button>
+    </div>
     <div>
       <label class="block text-gray-700">Savol matni</label>
       <input type="text" class="question-text w-full p-2 border rounded" required>
@@ -65,42 +77,61 @@ function createQuestionForm(number) {
   `;
 
   document.getElementById('questions-wrapper').appendChild(wrapper);
+  questionIndex++;
 }
 
-// Javob inputini yaratish
-function generateAnswerGroup(index) {
-  return `
-    <div class="answer-input-group">
-      <label class="block text-gray-700">Javob ${index}</label>
-      <input type="text" class="answer w-full p-2 border rounded" required>
-    </div>
-  `;
+// Formalar indekslarini yangilash
+function updateQuestionIndexes() {
+  const questionForms = document.querySelectorAll('[data-index]');
+  questionForms.forEach((form, idx) => {
+    const questionNumber = idx + 1;
+    form.dataset.index = questionNumber;
+    form.querySelector('h2').textContent = `Savol ${questionNumber}`;
+    form.querySelector('.close-btn').setAttribute('onclick', `closeQuestion(${questionNumber})`);
+  });
+
+  questionIndex = questionForms.length + 1;
 }
 
-// Variant qo‘shish tugmasi
+// Close Question logic
+export function closeQuestion(number) {
+  const form = document.querySelector(`div[data-index='${number}']`);
+  if (form) {
+    form.remove();
+    updateQuestionIndexes();
+  }
+}
+
+// Dinamik tugmalar
 document.addEventListener("click", (e) => {
-  if (!e.target.classList.contains("add-answer")) return;
+  // Variant qo‘shish tugmasi
+  if (e.target.classList.contains("add-answer")) {
+    const form = e.target.closest("div[data-index]");
+    const answersContainer = form.querySelector(".answers-container");
+    const answerCount = answersContainer.querySelectorAll(".answer-input-group").length + 1;
 
-  const form = e.target.closest("div[data-index]");
-  const answersContainer = form.querySelector(".answers-container");
-  const answerCount = answersContainer.querySelectorAll(".answer-input-group").length + 1;
+    answersContainer.insertAdjacentHTML("beforeend", generateAnswerGroup(answerCount));
 
-  answersContainer.insertAdjacentHTML("beforeend", generateAnswerGroup(answerCount));
+    const select = form.querySelector(".correct-answer");
+    const option = document.createElement("option");
+    option.value = answerCount;
+    option.textContent = `Javob ${answerCount}`;
+    select.appendChild(option);
+  }
 
-  const select = form.querySelector(".correct-answer");
-  const option = document.createElement("option");
-  option.value = answerCount;
-  option.textContent = `Javob ${answerCount}`;
-  select.appendChild(option);
+  // Savolni yopish
+  if (e.target.classList.contains("close-btn")) {
+    const questionNumber = e.target.closest("div[data-index]").dataset.index;
+    closeQuestion(questionNumber);
+  }
 });
 
-// "Savol qo‘shish" tugmasi
+// Savol qo‘shish tugmasi
 document.getElementById("add-question").addEventListener("click", () => {
-  questionCount++;
-  createQuestionForm(questionCount);
+  createQuestionForm();
 });
 
-// "Testni yakunlash" tugmasi
+// Testni yakunlash tugmasi
 document.getElementById("finish-test").addEventListener("click", async () => {
   const allForms = document.querySelectorAll("#questions-wrapper > div[data-index]");
   const allQuestions = [];
@@ -148,7 +179,7 @@ document.getElementById("finish-test").addEventListener("click", async () => {
   }
 });
 
-// Logout
+// Logout funksiyasi
 window.logout = function () {
   signOut(auth).then(() => window.location.href = 'index.html')
     .catch((error) => console.error("Logout xatosi:", error));
