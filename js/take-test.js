@@ -124,12 +124,6 @@ function saveAnswer() {
 
     const selectedAnswer = selected ? selected.value : null;
 
-    // Agar javob tanlanmagan bo'lsa, bu yerda uni saqlashdan oldin tekshiring
-    if (selectedAnswer === null) {
-        alert("Iltimos, savolga javob bering!");
-        return;
-    }
-
     userAnswers.push({
         questionId: q.id,
         selectedAnswer: selectedAnswer,
