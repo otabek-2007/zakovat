@@ -123,8 +123,6 @@ export async function showResults(testId) {
         div.className = "bg-gray-100 p-4 rounded shadow";
 
         div.innerHTML = `
-          <p><strong>Email:</strong> ${userEmail}</p>
-          <p><strong>To'g'ri javoblar:</strong> ${totalScore} / ${totalQuestions}</p>
           <p><strong>Guruh:</strong> ${group}</p>
         `;
 
