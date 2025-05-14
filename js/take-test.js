@@ -22,6 +22,7 @@ let currentQuestionIndex = 0;
 let questions = [];
 let userAnswers = [];
 let timer = null;
+let score = 0; // Ballar
 
 // Savollarni yuklash
 async function loadQuestions() {
@@ -42,7 +43,7 @@ async function loadQuestions() {
         questions.push({ id: doc.id, ...doc.data() });
     });
 
-    const savedAnswers = JSON.parse(localStorage.getItem('userAnswers') || '[]');
+    const savedAnswers = JSON.parse(localStorage.getItem('userAnswers_' + testId) || '[]');
     userAnswers = savedAnswers;
     currentQuestionIndex = userAnswers.length;
 
@@ -76,8 +77,6 @@ function showQuestion(index) {
     setupRadioToggle();
     startTimer(q.duration || 30);
 }
-
-// Radio tugma toggle qilish
 function setupRadioToggle() {
     const radios = document.querySelectorAll('input[type="radio"]');
     radios.forEach(radio => {
@@ -95,9 +94,10 @@ function setupRadioToggle() {
     });
 }
 
+
 function startTimer(seconds) {
     clearInterval(timer);
-    const questionKey = `timer_question_${currentQuestionIndex}`;
+    const questionKey = `timer_${testId}_${currentQuestionIndex}`;
     let timeRemaining = parseInt(localStorage.getItem(questionKey)) || seconds;
 
     updateTimerDisplay(timeRemaining);
@@ -122,25 +122,36 @@ function saveAnswer() {
     const selected = document.querySelector('input[name="option"]:checked');
     const q = questions[currentQuestionIndex];
 
-    localStorage.removeItem(`timer_question_${currentQuestionIndex}`);
+    const selectedAnswer = selected ? selected.value : null;
+
+    // Agar javob tanlanmagan bo'lsa, bu yerda uni saqlashdan oldin tekshiring
+    if (selectedAnswer === null) {
+        alert("Iltimos, savolga javob bering!");
+        return;
+    }
 
     userAnswers.push({
         questionId: q.id,
-        selectedAnswer: selected ? selected.value : null,
+        selectedAnswer: selectedAnswer,
         correctAnswer: q.correctAnswer,
         points: q.points
     });
 
-    localStorage.setItem('userAnswers', JSON.stringify(userAnswers));
+    // To'g'ri javobni tekshirish va ballarni hisoblash
+    if (selectedAnswer === q.correctAnswer) {
+        score += q.points; // To'g'ri javob bo'lsa, ballarni qo'shamiz
+    }
+
+    localStorage.setItem('userAnswers_' + testId, JSON.stringify(userAnswers));
     currentQuestionIndex++;
 
     if (currentQuestionIndex < questions.length) {
         showQuestion(currentQuestionIndex);
     } else {
-        localStorage.removeItem('userAnswers');
         showModal();
     }
 }
+
 
 function showModal() {
     if (modal) {
@@ -149,22 +160,29 @@ function showModal() {
     }
 }
 
+// Finalni topshirish
 window.submitTest = async function () {
     clearInterval(timer);
-    
-    const uid = user ? user.uid : 'guest_' + Date.now(); // Agar tizimga kirmagan bo'lsa, vaqtincha UID yaratish
-    const groupName = groupInput.value.trim();
 
-    const resultRef = doc(db, 'test_results', uid); 
+    const uid = user ? user.uid : 'guest_' + Date.now();
+    const groupName = groupInput.value.trim();
     const filteredAnswers = userAnswers.filter(a => a.selectedAnswer !== null);
 
+    const resultRef = doc(db, 'test_results', uid);
     await setDoc(resultRef, {
         testId: testId,
         testName: testName || "Nomaʼlum test",
         group: groupName,
         answers: filteredAnswers,
+        score: score, // Ballarni qo'shamiz
         timestamp: serverTimestamp()
     });
+
+    // LocalStorage tozalash
+    for (let i = 0; i < questions.length; i++) {
+        localStorage.removeItem(`timer_${testId}_${i}`);
+    }
+    localStorage.removeItem('userAnswers_' + testId);
 
     alert("Natijangiz saqlandi!");
     window.location.href = `/result.html?testId=${testId}`;

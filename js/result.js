@@ -14,64 +14,99 @@ if (!testId) {
 
 // Testga oid barcha natijalarni yuklash
 async function loadResults(testId) {
-  const resultsRef = collection(db, "test_results");
-  const q = query(resultsRef, where("testId", "==", testId));
-
-  try {
-    const querySnapshot = await getDocs(q);
-    if (querySnapshot.empty) {
-      console.log("Natijalar topilmadi.");
-      alert("Natijalar topilmadi!");
-      return;
-    }
-
-    let umumiyCorrect = 0;
-    let umumiyTotal = 0;
-    let groupName = "";
-
-    querySnapshot.forEach((doc, index) => {
-      const resultData = doc.data();
-      if (index === 0) {
-        groupName = resultData.group || "Nomaʼlum jamoa";
+    const resultsRef = collection(db, "test_results");
+    const q = query(resultsRef, where("testId", "==", testId));
+  
+    try {
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.empty) {
+        console.log("Natijalar topilmadi.");
+        alert("Natijalar topilmadi!");
+        return;
       }
-      displayResults(resultData);
-
-      const answers = resultData.answers || [];
-      umumiyTotal += answers.length;
-      umumiyCorrect += answers.filter(a => a.correctAnswer === a.selectedAnswer).length;
-    });
-
-    document.getElementById("correct-answers").innerText = `To‘g‘ri javoblar soni: ${umumiyCorrect} / ${umumiyTotal}`;
-    document.getElementById("total-score").innerText = `To‘plangan ballar: ${umumiyCorrect}`;
-
-  } catch (error) {
-    console.error("Xatolik yuz berdi: ", error);
-    alert("Natijalarni yuklashda xatolik yuz berdi.");
+  
+      let umumiyCorrect = 0;
+      let umumiyTotal = 0;
+      let umumiyPoints = 0;
+  
+      querySnapshot.forEach((doc, index) => {
+        const resultData = doc.data();
+  
+        const answers = resultData.answers || [];
+  
+        console.log(`Natija ${index + 1}:`, resultData); // Natijalarni konsolga chiqarish
+  
+        // Har bir foydalanuvchining natijalarini ko‘rsatish
+        displayResults(resultData);
+  
+        // To‘g‘ri javoblarni hisoblash
+        answers.forEach((ans) => {
+          umumiyTotal++;
+        
+          // selectedAnswer ni son formatiga o‘zgartirish
+          const selectedAnswer = String(ans.selectedAnswer); // String formatiga o‘zgartirish
+          const correctAnswer = String(ans.correctAnswer); // String formatiga o‘zgartirish
+        
+          // Tanlangan javob va to‘g‘ri javoblarni tekshirish
+          console.log(`Savol: ${ans.questionId} - Tanlangan javob: ${selectedAnswer}, To'g'ri javob: ${correctAnswer}`);
+        
+          // Stringga aylantirilgan selectedAnswer va correctAnswer ni taqqoslash
+          const correct = selectedAnswer === correctAnswer;
+          console.log(`To‘g‘ri javobmi? ${correct ? 'Ha' : 'Yo‘q'}`);
+        
+          if (correct) {
+            umumiyCorrect++;
+            umumiyPoints += ans.points || 1; // agar points yo‘q bo‘lsa, 1 deb olinadi
+          }
+        });
+        
+      });
+  
+      document.getElementById("correct-answers").innerText = `To‘g‘ri javoblar soni: ${umumiyCorrect}`;
+      document.getElementById("total-score").innerText = `To‘plangan ballar: ${umumiyPoints}`;
+  
+    } catch (error) {
+      console.error("Xatolik yuz berdi: ", error);
+      alert("Natijalarni yuklashda xatolik yuz berdi.");
+    }
   }
-}
-
-// Foydalanuvchi natijalarini chiqarish
-function displayResults(resultData) {
-  const resultContainer = document.getElementById("result-container");
-
-  const resultElement = document.createElement("div");
-  resultElement.classList.add("bg-white", "p-4", "rounded-lg", "shadow");
-
-  const title = document.createElement("h3");
-  title.classList.add("text-lg", "font-semibold", "mb-2");
-  title.textContent = `Jamoa Nomi: ${resultData.group || 'Nomaʼlum jamoa'}`;
-
-  const totalCorrect = resultData.answers?.filter(a => a.selectedAnswer === a.correctAnswer).length || 0;
-  const totalQuestions = resultData.answers?.length || 0;
-
-  const summary = document.createElement("p");
-  summary.textContent = `To‘g‘ri javoblar: ${totalCorrect} / ${totalQuestions}`;
-
-  resultElement.appendChild(title);
-  resultElement.appendChild(summary);
-
-  resultContainer.appendChild(resultElement);
-}
+  
+  // Foydalanuvchi natijalarini chiqarish
+  function displayResults(resultData) {
+    const resultContainer = document.getElementById("result-container");
+  
+    const resultElement = document.createElement("div");
+    resultElement.classList.add("bg-white", "p-4", "rounded-lg", "shadow", "mb-4");
+  
+    const title = document.createElement("h3");
+    title.classList.add("text-lg", "font-semibold", "mb-2");
+    title.textContent = `Jamoa: ${resultData.group || 'Nomaʼlum jamoa'}`;
+  
+    const answers = resultData.answers || [];
+    let correctCount = 0;
+    let pointsEarned = 0;
+  
+    answers.forEach((ans) => {
+      const selectedAnswer = String(ans.selectedAnswer); // String formatiga o‘zgartirish
+      const correctAnswer = String(ans.correctAnswer); // String formatiga o‘zgartirish
+  
+      console.log(`Savol: ${ans.questionId} - Tanlangan javob: ${selectedAnswer}`);
+  
+      if (selectedAnswer === correctAnswer) {
+        correctCount++;
+        pointsEarned += ans.points || 1;
+      }
+    });
+  
+    const summary = document.createElement("p");
+    summary.textContent = `To‘g‘ri javoblar: ${correctCount} | Ballar: ${pointsEarned}`;
+  
+    resultElement.appendChild(title);
+    resultElement.appendChild(summary);
+  
+    resultContainer.appendChild(resultElement);
+  }
+  
 
 // Logout funksiyasi
 window.logout = function () {
